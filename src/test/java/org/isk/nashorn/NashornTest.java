@@ -1,5 +1,6 @@
 package org.isk.nashorn;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
@@ -32,21 +33,22 @@ public class NashornTest {
     }
     
     @Test
-    public void nashornFile() throws ScriptException, NoSuchMethodException {
-        // Build a Reader
-        final InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("simple.js");
-        final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+    public void nashornFile() throws ScriptException, NoSuchMethodException, IOException {
         ENGINE.eval("var mySecondeVariable = 10");
-        ENGINE.eval(inputStreamReader);
         
+        // Build a Reader
+        try(final InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("simple.js")){
+            final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            ENGINE.eval(inputStreamReader);
+        }
         // Get a variable from a JavaScript file
         Assert.assertEquals("jsVariable", ENGINE.get("myVariable"));
-        
+
         // Invoke a function from a JavaScript file
         final Invocable invocable = (Invocable)ENGINE;
         final int sum = (Integer)invocable.invokeFunction("sum", 30, 20);
         Assert.assertEquals(50, sum);
-        
+
         // Get a variable
         Assert.assertEquals(new Integer(10), ENGINE.get("mySecondeVariable"));
     }
